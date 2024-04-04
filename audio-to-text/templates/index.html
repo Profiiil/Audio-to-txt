@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@700&display=swap" rel="stylesheet">
+
+    <link href="https://fontawesome.com/icons/microphone?f=classic&s=solid" rel="stylesheet">
+    <link rel="stylesheet" href="{{url_for('static',filename='styles/index.css')}}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=M+PLUS+Code+Latin:wght@100..700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+        rel="stylesheet">
+
+
+    <title>Speech Recognition in Python</title>
+    <script type="module" src="{{url_for('static', filename='js/recorder.js')}}"></script>
+    <script type="module" src="{{url_for('static', filename='js/script.js')}}"></script>
+
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="color: 	#c7c7c7;">🎙️Speech Recognition</h1>
+            <!-- <label for="lang">Language</label>
+            <select name="languages" id="languageSelect">
+                <option value="en-US">English</option>
+                <option value="ru">Русский</option>
+                <option value="kk-KZ">Қазақша</option>
+            </select> -->
+            <div class="dropdown" tab-index="0">
+                <button id="dropdown-btn"></button>
+                <ul class="dropdown-content" id="dropdown-content"></ul>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="main">
+            <div class="left-side">
+                <div class="box">
+                    <div class="object">
+                        <div class="outline">
+                        </div>
+                        <div class="outline" id="delayed">
+                        </div>
+                        <div class="button" id="outer-btn">
+                        </div>
+                        <div class="button" id="circlein">
+                            <svg class="mic-icon" version="1.1" xmlns="http://www.w3.org/2000/svg"
+                                xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 1000 1000"
+                                enable-background="new 0 0 1000 1000" xml:space="preserve" style="fill:#1E2D70">
+                                <g>
+                                    <path
+                                        d="M500,683.8c84.6,0,153.1-68.6,153.1-153.1V163.1C653.1,78.6,584.6,10,500,10c-84.6,0-153.1,68.6-153.1,153.1v367.5C346.9,615.2,415.4,683.8,500,683.8z M714.4,438.8v91.9C714.4,649,618.4,745,500,745c-118.4,0-214.4-96-214.4-214.4v-91.9h-61.3v91.9c0,141.9,107.2,258.7,245,273.9v124.2H346.9V990h306.3v-61.3H530.6V804.5c137.8-15.2,245-132.1,245-273.9v-91.9H714.4z" />
+                                </g>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <h1 id="or"> OR </h1>
+
+                <form method="POST" enctype="multipart/form-data" id="uploadForm">
+                    <input type="file" name="file" style="font-family: 'Courier New', Courier, monospace;"
+                        id="uploadFile">
+                    <label for="uploadFile" id="labelFile">Выберите файл</label>
+                    <br>
+                    <input type="submit" id="submitButton" name='Transcribe'>
+                    <input type="hidden" name="language" id="language">
+                </form>
+            </div>
+
+            <div class="container">
+                <h1 id="headingTranscript" style="color: 	#c7c7c7;">Transcript</h1>
+                <div class="right-side">
+                    <div id="speechTranscriptContainer">
+                        <p id="transcript"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="loading">Loading...</div>
+        <!-- <div id="transcript"></div> -->
+        <script>
+            document.getElementById("uploadForm").addEventListener("submit", function (event) {
+                event.preventDefault(); // Prevent default form submission
+
+                var formData = new FormData(this);
+                var language = document.getElementById("language").value;
+
+                formData.append("language", language);
+                if (language === "ru-RU") {
+                    document.getElementById("transcript").textContent = "Загрузка..."
+                } else if (language === "kk-KZ") {
+                    document.getElementById("transcript").textContent = "Жүктеу..."
+                } else {
+                    document.getElementById("transcript").textContent = "Loading..."
+                }
+
+
+                fetch("/transcript", {
+                    method: "POST",
+                    body: formData
+                })
+                    .then(response => response.text())
+                    .then(data => {
+                        var transcript = document.getElementById("transcript");
+                        transcript.textContent = data;
+                        loading.style.display = "none"; // Hide activity indicator
+                    })
+                    .catch(error => {
+                        console.error("Error:", error);
+                        loading.style.display = "none"; // Hide activity indicator on error
+                    });
+            });
+        </script>
+
+        <script>
+            // JavaScript to update hidden input field with selected language value
+            document.getElementById('languageSelect').addEventListener('change', function () {
+                var languageSelect = document.getElementById('languageSelect');
+                var languageInput = document.getElementById('language');
+                languageInput.value = languageSelect.value;
+            });
+        </script>
+    </div>
+</body>
